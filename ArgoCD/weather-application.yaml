@@ -6,9 +6,9 @@ metadata:
 spec:
     project: default
     source:
-        repoURL: <repository-url>
-        targetRevision: <commit-or-branch>
-        path: <path-to-application-files>
+        repoURL: 'https://github.com/The-LittleTeapot/ArgoCD-Helm.git'
+        path: Helm/templates
+        targetRevision: HEAD
     destination:
         server: https://kubernetes.default.svc
         namespace: weatherapp
