@@ -20,7 +20,7 @@ spec:
           imagePullPolicy: Always
           
           ports:
-            - containerPort: 5000
+            - containerPort: 8000
           
           resources:
             requests:
