@@ -55,13 +55,10 @@ patch=$(echo ${current_ver} | awk -F'.' '{print $3}')
 # Apply increments based on flags
 if [ "${increment_major}" = "true" ]; then
     major=$((major + 1))
-    minor=0   # Reset minor and patch when major is incremented
-    patch=0
 fi
 
 if [ "${increment_minor}" = "true" ]; then
     minor=$((minor + 1))
-    patch=0   # Reset patch when minor is incremented
 fi
 
 if [ "${increment_patch}" = "true" ]; then

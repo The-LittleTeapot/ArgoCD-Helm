@@ -24,40 +24,52 @@ pipeline {
             }
         }
 
-        stage('Increment Version') {
-            steps {
-                def NEW_IMAGE_TAG = sh(script: './increment_version.sh -v ${IMAGE_TAG} -p', returnStdout: true).trim()
-                env.IMAGE_TAG = NEW_IMAGE_TAG
-                echo "New Image Tag: ${IMAGE_TAG}"
-
-            }
-        }
-
-        stage('Build') {
-            steps {
-                dir('python_weatherapp') {
-                    // sh 'docker context use default'
-                    sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
-                }
-            }
-        }
-
-        stage('Publish to Docker Hub') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS_ID}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASSWORD')]) {
-                    sh "docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} docker.io"
-                    sh "docker push ${IMAGE_NAME}:${IMAGE_TAG}"
-    
-                }
-            }
-        }
-        
         stage(' Clone GitHub repo') {
             steps {
                 sh 'mkdir -p github_repo'
                 dir('github_repo') {
                     git branch: "${GITHUB_BRANCH}", credentialsId: "${GITHUB_ID}", url: "${GITHUB_URL}"
-                    //Update image tag
+                }
+            }
+
+        }
+
+        stage('Increment Version') {
+            steps {
+                dir('github_repo'){
+                    script {
+                        def NEW_IMAGE_TAG = sh(script: './version.sh -v ${IMAGE_TAG} -p', returnStdout: true).trim()
+                        env.IMAGE_TAG = NEW_IMAGE_TAG
+                        echo "New Image Tag: ${IMAGE_TAG}"
+                    }
+                }
+
+            }
+        }
+
+        // stage('Build') {
+        //     steps {
+        //         dir('python_weatherapp') {
+        //             // sh 'docker context use default'
+        //             sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+        //         }
+        //     }
+        // }
+
+        // stage('Publish to Docker Hub') {
+        //     steps {
+        //         withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS_ID}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASSWORD')]) {
+        //             sh "docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} docker.io"
+        //             sh "docker push ${IMAGE_NAME}:${IMAGE_TAG}"
+    
+        //         }
+        //     }
+        // }
+
+        stage(' Update GitHub repo') {
+            steps {
+                sh 'mkdir -p github_repo'
+                dir('github_repo') {
                     script {
                         sh "sed -i '' -e 's/itaykalininsky/app:.*/itaykalininsky/app:${IMAGE_TAG}/g' /Helm/templates/weatherapp-deployment.yaml"
                         sh  "git add ."
@@ -69,6 +81,8 @@ pipeline {
             }
 
         }
+        
+      
       
         // stage('Deploy to EKS') {
         //     steps {
